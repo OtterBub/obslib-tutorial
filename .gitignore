@@ -400,3 +400,6 @@ FodyWeavers.xsd
 # data folder
 data/
 data.zip
+!lib/[Dd]ebug
+!lib/[Rr]elease
+*.exp

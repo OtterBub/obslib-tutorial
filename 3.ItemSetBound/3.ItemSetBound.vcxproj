@@ -18,10 +18,13 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{de22df0a-d365-4b85-8773-94e59860928e}</ProjectGuid>
+    <ProjectGuid>{7D041413-51FA-4572-AEDC-01E6A5516DF4}</ProjectGuid>
     <RootNamespace>My1DisplayScene</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -150,9 +153,6 @@ copy "$(SolutionDir)\data\dll\$(Configuration)\*.*" "$(OutDir)"</Command>
 copy "$(SolutionDir)\data\dll\$(Configuration)\*.*" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

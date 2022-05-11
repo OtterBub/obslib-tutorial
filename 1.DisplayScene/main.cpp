@@ -1,5 +1,11 @@
-// 1.DisplayScene.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
+// VIDBOX inc. SKPark (SungKyoung Park) 
+// CreatedDate: May-10-2022
+// 
+// description
+// This Source is only Display Camera
+//
+// 1. DisplayScene
 
 #include <iostream>
 #include <string>

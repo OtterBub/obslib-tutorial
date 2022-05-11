@@ -1,5 +1,11 @@
-// 1.DisplayScene.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
+// VIDBOX inc. SKPark (SungKyoung Park) 
+// CreatedDate: May-10-2022
+// 
+// description
+// This Source is only Display Camera
+//
+// 3. Item Set Bound
 
 #include <iostream>
 #include <string>
@@ -14,7 +20,7 @@
 #pragma comment(lib, "obs.lib")
 
 // windows title name
-static TCHAR szTitle[] = L"2.ViewProperties";
+static TCHAR szTitle[] = L"3.ItemSetBound";
 
 // for window
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
