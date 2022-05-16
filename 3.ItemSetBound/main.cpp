@@ -10,6 +10,9 @@
 #include <iostream>
 #include <string>
 
+// for camera list
+#include <vector>
+
 // include for create window
 #include <Windows.h>
 
@@ -31,13 +34,13 @@ inline HWND CreateMainWindow();
 // this used function when Create Display
 static void RenderWindow(void* data, uint32_t cx, uint32_t cy);
 
+// Camera List
+std::vector<std::string> camList;
+
 // main function
 int main()
 {
-    // ----- 1. start up obslib -----
     obs_startup("en-US", NULL, NULL);
-
-    // ----- 2. Load Modules -----
 
     // set modules path
     std::string pluginsPath = "\\..\\..\\data\\obs-plugins\\";
@@ -77,7 +80,6 @@ int main()
     RECT winrect;
     GetWindowRect(mainWindow, &winrect);
 
-    // ----- 3. obs reset video -----
     int width = winrect.right - winrect.left;
     int height = winrect.bottom - winrect.top;
 
@@ -94,7 +96,6 @@ int main()
 
     obs_reset_video(&ovi);
 
-    // ----- 4. Create Display -----
     gs_init_data info = { 0, };
     info.cx = width;
     info.cy = height;
@@ -110,45 +111,52 @@ int main()
     // register callback reunder function
     obs_display_add_draw_callback(display, RenderWindow, NULL);
     
-    // ----- 5. Create Scene -----
     OBSScene scene = obs_scene_create("main scene");
 
-    // ----- 6. Create Source -----
     OBSSource source = obs_source_create(
         "dshow_input", // from obs module (win-dshow.dll)
-        "Vidieo Capture", // source name
+        "Video Capture", // source name
         NULL, // source setting
         NULL // source hotkey
     );
 
-    // ----- 7. Add Source to Scene -----
     obs_scene_add(scene, source);
 
-    // ----- 8. Draw Scene -----
     obs_set_output_source(0, obs_scene_get_source(scene));
 
-    //////////////////////////////////////
-    // but until doesn't display current.
-    // need source set property
-    // refer to below continue
-    //////////////////////////////////////
-
-    // ----- 9. Get Source Properties -----
     obs_properties_t* props = obs_source_properties(source);
     obs_property_t* prop = obs_properties_get(props, "video_device_id");
-
-    // get camName by index 0
-    std::string camName = obs_property_list_item_string(prop, 0);
-
-    // ----- 10. Update Source Property -----
-    // get data value by source
     OBSData data = obs_source_get_settings(source);
+    size_t count = obs_property_list_item_count(prop);
+
+    for (size_t index = 0; index < count; index++) {
+        camList.push_back(obs_property_list_item_string(prop, index));
+    }
 
     // set data value
-    obs_data_set_string(data, "video_device_id", camName.c_str());
+    if(!camList.empty())
+        obs_data_set_string(data, "video_device_id", camList[0].c_str());
     
     // source apply data
     obs_source_update(source, data);
+
+    ////////////////////////////////////////////////////////
+    // ----- Webcam display view fit the window size -----
+    ////////////////////////////////////////////////////////
+
+    // get item
+    OBSSceneItem item = obs_scene_sceneitem_from_source(scene, source);
+
+    // set bounds width, height
+    vec2 bounds;
+    vec2_set(&bounds, width, height);
+
+    // set bounds to item
+    obs_sceneitem_set_bounds(item, &bounds);
+
+    // set bounds type
+    obs_sceneitem_set_bounds_type(item, obs_bounds_type::OBS_BOUNDS_SCALE_INNER);
+
 
 
     // Window loop
@@ -165,10 +173,29 @@ int main()
 
 
 // for window
+// for window
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    case WM_KEYDOWN:
+        if (wParam >= 0x30 &&
+            wParam <= 0x39)
+        {
+            int numKey = wParam - 0x30;
+            if (!camList.empty() && numKey < camList.capacity())
+            {
+                OBSSource camSource = obs_get_source_by_name("Video Capture");
+                OBSData camData = obs_source_get_settings(camSource);
+
+                std::cout << "[" << numKey << "] " << camList[numKey] << std::endl;
+                obs_data_set_string(camData, "video_device_id", camList[numKey].c_str());
+
+                obs_source_update(camSource, camData);
+            }
+        }
+        break;
+
     case WM_DESTROY:
     case WM_CLOSE:
         PostQuitMessage(0);

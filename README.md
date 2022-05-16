@@ -10,4 +10,4 @@ this project is for obslib tutorial
 
 2. ViewProperties - Done
 
-3. ItemSetBound - In Progress..
+3. ItemSetBound - Done

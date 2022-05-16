@@ -116,7 +116,7 @@ int main()
     // ----- 6. Create Source -----
     OBSSource source = obs_source_create(
         "dshow_input", // from obs module (win-dshow.dll)
-        "Vidieo Capture", // source name
+        "Video Capture", // source name
         NULL, // source setting
         NULL // source hotkey
     );

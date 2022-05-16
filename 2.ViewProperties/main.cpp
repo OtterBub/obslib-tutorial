@@ -10,6 +10,9 @@
 #include <iostream>
 #include <string>
 
+// for camera list
+#include <vector>
+
 // include for create window
 #include <Windows.h>
 
@@ -30,6 +33,9 @@ inline HWND CreateMainWindow();
 
 // this used function when Create Display
 static void RenderWindow(void* data, uint32_t cx, uint32_t cy);
+
+// Camera List
+std::vector<std::string> camList;
 
 // main function
 int main()
@@ -104,31 +110,31 @@ int main()
     // set background color
     obs_display_set_background_color(display, 0);
 
-    // register callback reunder function
+    // register callback render function
     obs_display_add_draw_callback(display, RenderWindow, NULL);
     
-    OBSScene scene = obs_scene_create("main scene");
-
-    obs_set_output_source(0, obs_scene_get_source(scene));
-
-
     //////////////////////////////////////
     // now, view properties.
     //////////////////////////////////////
     std::cout << "\n\n --- now, view properties." << std::endl;
 
     // ----- 1. Get Source Properties -----
+    // get "dshow_input" source's properties
     obs_properties_t* props = obs_get_source_properties("dshow_input");
 
     // ----- 2. Get Properties's first property -----
+    // get first property by properties
     obs_property_t* prop = obs_properties_first(props);
+    
+    // ----- 5. How to use enumerator properties -----
+    
     bool enumRun = true;
     while (enumRun) {
         
-        // get property name
+        // ----- 3. Get Property Name -----
         std::string propName = obs_property_name(prop);
 
-        // get property type
+        // ----- 4. Get Property Type -----
         obs_property_type type = obs_property_get_type(prop);
 
         std::cout << "property Name: " << propName << std::endl;
@@ -170,6 +176,9 @@ int main()
                 std::cout << "FONT";
                 break;
 
+
+                // ----- 5. List -----
+                // Device list etc...
             case OBS_PROPERTY_LIST:
             case OBS_PROPERTY_EDITABLE_LIST:
                 if(type == OBS_PROPERTY_LIST)
@@ -179,6 +188,8 @@ int main()
                 {
                     obs_combo_type comboType = obs_property_list_type(prop);
                     obs_combo_format comboFormat = obs_property_list_format(prop);
+
+                    // item count in list
                     size_t listSize = obs_property_list_item_count(prop);
 
                     std::cout << "- List Type: ";
@@ -216,6 +227,7 @@ int main()
                     }
                     std::cout << std::endl;
                     
+                    // get velue in list
                     for (size_t i = 0; i < listSize; i++) {
                         std::cout << "- [" << i << "]" << "Value: ";
                         switch (comboFormat) {
@@ -262,13 +274,60 @@ int main()
         }
         std::cout << std::endl;
 
-        // return false if the last property
+        // return false if no more next property.
         enumRun = obs_property_next(&prop);
         std::cout << std::endl;
     }
 
+    //////////////////////////////////////
+    // Get Camera List and Set Source Value
+    //////////////////////////////////////
+    std::cout << "\n\n --- Get Camera List and Set Source Value ---" << std::endl;
+
+    // std::vector<std::string> camList -- Global Vector list
+
+    // set scene, source, data START
+    OBSScene scene = obs_scene_create("main scene");
+    OBSSource source = obs_source_create(
+        "dshow_input",
+        "Video Capture",
+        NULL,
+        NULL
+    );
+
+    obs_scene_add(scene, source);
+    obs_set_output_source(0, obs_scene_get_source(scene));
+    // set scene, source, data END
+
+    // ----- 6. How to get Video Device Name -----
+    // get source properties
+    obs_properties_t* camProps = obs_source_properties(source);
+    // get camera name by property "video_device_id"
+    obs_property_t* camProp = obs_properties_get(camProps, "video_device_id");
+
+    // get camera total count
+    size_t camCount = obs_property_list_item_count(camProp);
+
+    // save camera name to list
+    for (size_t index = 0; index < camCount; index++) {
+        std::string camItem = obs_property_list_item_string(camProp, index);
+        camList.push_back(camItem);
+        std::cout << "[" << index << "]" << camItem << std::endl;
+    }
+
+    // ----- 7. Set video device on source -----
     
-    
+    // Get Setting Data
+    OBSData data = obs_source_get_settings(source);
+
+    // when the total number of camera count is greater than 0
+    if (!camList.empty()) {
+        // set index "0" camera 
+        obs_data_set_string(data, "video_device_id", camList[0].c_str());
+    }
+
+    // Update source data
+    obs_source_update(source, data);
 
 
     // Window loop
@@ -290,7 +349,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_KEYDOWN:
-        
+        if (wParam >= 0x30 &&
+            wParam <= 0x39)
+        {
+            int numKey = wParam - 0x30;
+            if (!camList.empty() && numKey < camList.capacity())
+            {
+                OBSSource camSource = obs_get_source_by_name("Video Capture");
+                OBSData camData = obs_source_get_settings(camSource);
+
+                std::cout << "[" << numKey << "] " << camList[numKey] << std::endl;
+                obs_data_set_string(camData, "video_device_id", camList[numKey].c_str());
+
+                obs_source_update(camSource, camData);
+            }
+        }
         break;
 
     case WM_DESTROY:
