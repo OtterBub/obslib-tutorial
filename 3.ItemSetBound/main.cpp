@@ -144,17 +144,21 @@ int main()
     // ----- Webcam display view fit the window size -----
     ////////////////////////////////////////////////////////
 
-    // get item
+    // already calculated window width, height
+    // int width = winrect.right - winrect.left;
+    // int height = winrect.bottom - winrect.top;
+
+    // ----- 1. get item from source -----
     OBSSceneItem item = obs_scene_sceneitem_from_source(scene, source);
 
-    // set bounds width, height
+    // ----- 2. set bounds width, height -----
     vec2 bounds;
     vec2_set(&bounds, width, height);
 
-    // set bounds to item
+    // ----- 3. set bounds to item ------
     obs_sceneitem_set_bounds(item, &bounds);
 
-    // set bounds type
+    // ----- 4. set bounds type -----
     obs_sceneitem_set_bounds_type(item, obs_bounds_type::OBS_BOUNDS_SCALE_INNER);
 
 
